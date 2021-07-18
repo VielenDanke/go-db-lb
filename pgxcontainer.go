@@ -7,12 +7,14 @@ import (
 	"time"
 )
 
+const primaryNode = 0
+
 type loadBalancer struct {
-	nodes []*PoolNode
+	nodes []*PGxPoolNode
 }
 
-func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *loadBalancer {
-	nodes := make([]*PoolNode, 0, nodeSize)
+func NewPGxLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *loadBalancer {
+	nodes := make([]*PGxPoolNode, 0, nodeSize)
 	lb := &loadBalancer{nodes: nodes}
 	go func(lb *loadBalancer) {
 		counter := 0
@@ -42,7 +44,7 @@ func (lb *loadBalancer) AddNode(ctx context.Context, n *pgxpool.Pool) error {
 	if pingErr := n.Ping(ctx); pingErr != nil {
 		return pingErr
 	}
-	lb.nodes = append(lb.nodes, &PoolNode{conn: n, health: true})
+	lb.nodes = append(lb.nodes, &PGxPoolNode{conn: n, health: true})
 	return nil
 }
 
@@ -50,14 +52,14 @@ func (lb *loadBalancer) AddPrimaryNode(ctx context.Context, n *pgxpool.Pool) err
 	if pingErr := n.Ping(ctx); pingErr != nil {
 		return pingErr
 	}
-	pn := &PoolNode{conn: n, primary: true, health: true}
+	pn := &PGxPoolNode{conn: n, primary: true, health: true}
 	if len(lb.nodes) > 0 {
 		if lb.nodes[0].primary {
 			return fmt.Errorf("primary node already exists")
 		}
 		lb.swap(pn)
 	} else {
-		lb.nodes[0] = pn
+		lb.nodes[primaryNode] = pn
 	}
 	return nil
 }
@@ -71,7 +73,7 @@ func (lb *loadBalancer) CallPrimaryPreferred() (*pgxpool.Pool, error) {
 }
 
 func (lb *loadBalancer) CallPrimaryNode() (*pgxpool.Pool, error) {
-	pr := lb.nodes[0]
+	pr := lb.nodes[primaryNode]
 	if pr == nil {
 		return nil, fmt.Errorf("lb nodes are empty")
 	}
@@ -84,7 +86,7 @@ func (lb *loadBalancer) CallPrimaryNode() (*pgxpool.Pool, error) {
 func (lb *loadBalancer) CallFirstAvailable() (*pgxpool.Pool, error) {
 	nCh := make(chan *pgxpool.Pool, 1)
 	for _, v := range lb.nodes {
-		go func(v *PoolNode, nCh chan *pgxpool.Pool) {
+		go func(v *PGxPoolNode, nCh chan *pgxpool.Pool) {
 			if v.health {
 				nCh <- v.conn
 			} else {
@@ -100,7 +102,7 @@ func (lb *loadBalancer) CallFirstAvailable() (*pgxpool.Pool, error) {
 	}
 }
 
-func (lb *loadBalancer) swap(n *PoolNode) {
+func (lb *loadBalancer) swap(n *PGxPoolNode) {
 	temp := lb.nodes[0]
 	lb.nodes[0] = n
 	lb.nodes = append(lb.nodes, temp)

@@ -1,9 +1,18 @@
 package main
 
-import "github.com/jackc/pgx/v4/pgxpool"
+import (
+	"database/sql"
+	"github.com/jackc/pgx/v4/pgxpool"
+)
 
-type PoolNode struct {
+type PGxPoolNode struct {
 	conn    *pgxpool.Pool
+	primary bool
+	health  bool
+}
+
+type SQLPoolNode struct {
+	conn    *sql.DB
 	primary bool
 	health  bool
 }

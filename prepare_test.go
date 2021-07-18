@@ -12,7 +12,7 @@ var lb *loadBalancer
 func init() {
 	dbUrl := "user=user password=password sslmode=disable dbname=user host=localhost port=5432"
 	ctx := context.Background()
-	lb = NewLoadBalancer(ctx, 2)
+	lb = NewPGxLoadBalancer(ctx, 2, 2)
 	cfg, _ := pgxpool.ParseConfig(dbUrl)
 	cfg.MaxConns = 10
 	cfg.MinConns = 5
