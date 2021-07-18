@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v4"
+	"log"
 	"sync"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestLoadBalancer_CallFirstAvailable_Insert(t *testing.T) {
 	wg := &sync.WaitGroup{}
 	ctx := context.Background()
 
-	for counter < 10 {
+	for counter < 100 {
 		wg.Add(1)
 		go func(ctx context.Context, wg *sync.WaitGroup, t *testing.T, counter int) {
 			fAvailable, fErr := lb.CallFirstAvailable()
@@ -48,7 +49,14 @@ func TestLoadBalancer_CallFirstAvailable_Insert(t *testing.T) {
 			}
 			exec, execErr := tx.Exec(ctx, "insert into users(name) values($1)", fmt.Sprintf("Test %d", counter))
 			if execErr != nil {
+				rollbackErr := tx.Rollback(ctx)
+				if rollbackErr != nil {
+					log.Println(rollbackErr)
+				}
 				t.Error(execErr)
+			}
+			if commitErr := tx.Commit(ctx); commitErr != nil {
+				log.Println(commitErr)
 			}
 			assert.NotEqual(t, 0, exec.RowsAffected())
 			wg.Done()

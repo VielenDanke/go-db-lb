@@ -80,6 +80,9 @@ func (lb *loadBalancer) CallPrimaryNode() (*pgxpool.Pool, error) {
 	if !pr.primary {
 		return nil, fmt.Errorf("primary node not found")
 	}
+	if !pr.health {
+		return nil, fmt.Errorf("node is unhealthy")
+	}
 	return pr.conn, nil
 }
 
