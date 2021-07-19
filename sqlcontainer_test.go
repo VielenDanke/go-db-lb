@@ -87,7 +87,7 @@ func TestLoadBalancer_CallPrimaryNode_SQLPoolNode(t *testing.T) {
 	counter := 0
 
 	for counter < 10 {
-		fAvailable := sqlLB.CallPrimaryNode().DB()
+		fAvailable := sqlLB.CallPrimary().DB()
 		if fAvailable == nil {
 			t.Error(fmt.Errorf("node is nil"))
 			return

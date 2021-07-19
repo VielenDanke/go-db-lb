@@ -115,14 +115,14 @@ func (lb *loadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error 
 }
 
 func (lb *loadBalancer) CallPrimaryPreferred() PoolNode {
-	node := lb.CallPrimaryNode()
+	node := lb.CallPrimary()
 	if node == nil {
 		return lb.CallFirstAvailable()
 	}
 	return node
 }
 
-func (lb *loadBalancer) CallPrimaryNode() PoolNode {
+func (lb *loadBalancer) CallPrimary() PoolNode {
 	pr := lb.nodes[primaryNode]
 	if pr == nil {
 		return nil

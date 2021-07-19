@@ -85,7 +85,7 @@ func TestLoadBalancer_CallPrimaryNode_PGxPoolNode(t *testing.T) {
 	counter := 0
 
 	for counter < 10 {
-		fAvailable := pgxLB.CallPrimaryNode().PGxPool()
+		fAvailable := pgxLB.CallPrimary().PGxPool()
 		if fAvailable == nil {
 			t.Error(fmt.Errorf("node is nil"))
 			return
