@@ -61,7 +61,7 @@ func (lb *loadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Po
 		}
 		lb.swapPGxPoolNode(pn)
 	} else {
-		lb.nodes[primaryNode] = pn
+		lb.nodes = append(lb.nodes, pn)
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (lb *loadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) erro
 		}
 		lb.swapSQLxPoolNode(pn)
 	} else {
-		lb.nodes[primaryNode] = pn
+		lb.nodes = append(lb.nodes, pn)
 	}
 	return nil
 }
@@ -109,7 +109,7 @@ func (lb *loadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error 
 		}
 		lb.swapSQLPoolNode(pn)
 	} else {
-		lb.nodes[primaryNode] = pn
+		lb.nodes = append(lb.nodes, pn)
 	}
 	return nil
 }
