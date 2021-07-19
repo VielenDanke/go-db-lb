@@ -7,20 +7,20 @@ import (
 	"testing"
 )
 
-var lb *loadBalancer
+var pgxLB *loadBalancer
 
 func init() {
 	dbUrl := "user=user password=password sslmode=disable dbname=user host=localhost port=5432"
 	ctx := context.Background()
-	lb = NewPGxLoadBalancer(ctx, 2, 2)
+	pgxLB = NewLoadBalancer(ctx, 2, 2)
 	cfg, _ := pgxpool.ParseConfig(dbUrl)
 	cfg.MaxConns = 10
 	cfg.MinConns = 5
 	cfg.MaxConnLifetime = 60
 	poolF, _ := pgxpool.ConnectConfig(ctx, cfg)
 	poolS, _ := pgxpool.ConnectConfig(ctx, cfg)
-	lb.AddNode(ctx, poolF)
-	lb.AddPrimaryNode(ctx, poolS)
+	pgxLB.AddPGxPoolNode(ctx, poolF)
+	pgxLB.AddPGxPoolPrimaryNode(ctx, poolS)
 }
 
 func TestMain(m *testing.M) {
