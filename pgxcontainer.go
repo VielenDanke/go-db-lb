@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"time"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jmoiron/sqlx"
-	"time"
 )
 
 const primaryNode = 0
@@ -43,6 +45,9 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *loadBal
 }
 
 func (lb *loadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.Ping(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -51,6 +56,9 @@ func (lb *loadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) err
 }
 
 func (lb *loadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Pool) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.Ping(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -67,6 +75,9 @@ func (lb *loadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Po
 }
 
 func (lb *loadBalancer) AddSQLxNode(ctx context.Context, n *sqlx.DB) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.PingContext(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -75,6 +86,9 @@ func (lb *loadBalancer) AddSQLxNode(ctx context.Context, n *sqlx.DB) error {
 }
 
 func (lb *loadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.PingContext(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -91,6 +105,9 @@ func (lb *loadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) erro
 }
 
 func (lb *loadBalancer) AddSQLNode(ctx context.Context, n *sql.DB) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.PingContext(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -99,6 +116,9 @@ func (lb *loadBalancer) AddSQLNode(ctx context.Context, n *sql.DB) error {
 }
 
 func (lb *loadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error {
+	if err := checkForNil(ctx, n); err != nil {
+		return err
+	}
 	if pingErr := n.PingContext(ctx); pingErr != nil {
 		return pingErr
 	}
@@ -171,4 +191,14 @@ func (lb *loadBalancer) swapSQLPoolNode(n *SQLPoolNode) {
 	temp := lb.nodes[0]
 	lb.nodes[0] = n
 	lb.nodes = append(lb.nodes, temp)
+}
+
+func checkForNil(ctx context.Context, n interface{}) error {
+	if n == nil {
+		return errors.New("pool cannot be nil")
+	}
+	if ctx == nil {
+		return errors.New("context cannot be nil")
+	}
+	return nil
 }
