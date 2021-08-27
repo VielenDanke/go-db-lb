@@ -31,8 +31,8 @@ If you wouldn't - you would receive nil value</b>
 sqlLB := NewLoadBalancer(ctx, 2, 2)
 
 dbF := sqlLB.CallPrimaryPreferred().DB()
-dbS := sqlLB.CallFirstAvailable().PGxPool()
-dbT := sqlLB.CallPrimary().PGxPool()
+dbS := sqlLB.CallFirstAvailable().DB()
+dbT := sqlLB.CallPrimary().DB()
 ````
 
 ### SQLx example
