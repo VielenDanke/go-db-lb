@@ -41,8 +41,8 @@ dbT := sqlLB.CallPrimary().PGxPool()
 sqxlLB := NewLoadBalancer(ctx, 2, 2)
 
 dbF := sqlxLB.CallPrimaryPreferred().DBx()
-dbS := sqlxLB.CallFirstAvailable().PGxPool()
-dbT := sqlxLB.CallPrimary().PGxPool()
+dbS := sqlxLB.CallFirstAvailable().DBx()
+dbT := sqlxLB.CallPrimary().DBx()
 ````
 
 ### PGxPool example
