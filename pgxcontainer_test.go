@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v4"
 	"log"
 	"sync"
 	"testing"
+
+	"github.com/jackc/pgx/v4"
 
 	"github.com/stretchr/testify/assert"
 )
