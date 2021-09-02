@@ -31,7 +31,7 @@ func TestLoadBalancer_CallFirstAvailable_Insert_PGxPoolNode(t *testing.T) {
 	counter := 0
 
 	stopCh := make(chan struct{})
-	errCh := make(chan error, 0)
+	errCh := make(chan error)
 	wg := &sync.WaitGroup{}
 	ctx := context.Background()
 

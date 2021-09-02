@@ -12,9 +12,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var pgxLB *loadBalancer
-var sqlLB *loadBalancer
-var sqlxLB *loadBalancer
+var pgxLB *LoadBalancer
+var sqlLB *LoadBalancer
+var sqlxLB *LoadBalancer
 
 func init() {
 	dbUrl := "user=user password=password sslmode=disable dbname=user host=localhost port=5432"

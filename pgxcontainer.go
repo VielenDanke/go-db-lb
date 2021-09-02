@@ -13,14 +13,14 @@ import (
 
 const primaryNode = 0
 
-type loadBalancer struct {
+type LoadBalancer struct {
 	nodes []PoolNode
 }
 
-func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *loadBalancer {
+func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *LoadBalancer {
 	nodes := make([]PoolNode, 0, nodeSize)
-	lb := &loadBalancer{nodes: nodes}
-	go func(lb *loadBalancer) {
+	lb := &LoadBalancer{nodes: nodes}
+	go func(lb *LoadBalancer) {
 		counter := 0
 		for {
 			time.Sleep(time.Duration(timeoutSeconds) * time.Second)
@@ -44,7 +44,7 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *loadBal
 	return lb
 }
 
-func (lb *loadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) error {
+func (lb *LoadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (lb *loadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) err
 	return nil
 }
 
-func (lb *loadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Pool) error {
+func (lb *LoadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Pool) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (lb *loadBalancer) AddPGxPoolPrimaryNode(ctx context.Context, n *pgxpool.Po
 	return nil
 }
 
-func (lb *loadBalancer) AddSQLxNode(ctx context.Context, n *sqlx.DB) error {
+func (lb *LoadBalancer) AddSQLxNode(ctx context.Context, n *sqlx.DB) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -85,7 +85,7 @@ func (lb *loadBalancer) AddSQLxNode(ctx context.Context, n *sqlx.DB) error {
 	return nil
 }
 
-func (lb *loadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) error {
+func (lb *LoadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (lb *loadBalancer) AddSQLxPrimaryNode(ctx context.Context, n *sqlx.DB) erro
 	return nil
 }
 
-func (lb *loadBalancer) AddSQLNode(ctx context.Context, n *sql.DB) error {
+func (lb *LoadBalancer) AddSQLNode(ctx context.Context, n *sql.DB) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func (lb *loadBalancer) AddSQLNode(ctx context.Context, n *sql.DB) error {
 	return nil
 }
 
-func (lb *loadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error {
+func (lb *LoadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error {
 	if err := checkForNil(ctx, n); err != nil {
 		return err
 	}
@@ -134,7 +134,7 @@ func (lb *loadBalancer) AddSQLPrimaryNode(ctx context.Context, n *sql.DB) error 
 	return nil
 }
 
-func (lb *loadBalancer) CallPrimaryPreferred() PoolNode {
+func (lb *LoadBalancer) CallPrimaryPreferred() PoolNode {
 	node := lb.CallPrimary()
 	if node == nil {
 		return lb.CallFirstAvailable()
@@ -142,7 +142,7 @@ func (lb *loadBalancer) CallPrimaryPreferred() PoolNode {
 	return node
 }
 
-func (lb *loadBalancer) CallPrimary() PoolNode {
+func (lb *LoadBalancer) CallPrimary() PoolNode {
 	pr := lb.nodes[primaryNode]
 	if pr == nil {
 		return nil
@@ -156,7 +156,7 @@ func (lb *loadBalancer) CallPrimary() PoolNode {
 	return pr
 }
 
-func (lb *loadBalancer) CallFirstAvailable() PoolNode {
+func (lb *LoadBalancer) CallFirstAvailable() PoolNode {
 	nCh := make(chan PoolNode, 1)
 	for _, v := range lb.nodes {
 		go func(v PoolNode, nCh chan PoolNode) {
@@ -170,24 +170,24 @@ func (lb *loadBalancer) CallFirstAvailable() PoolNode {
 	select {
 	case conn := <-nCh:
 		return conn
-	case <-time.Tick(2 * time.Second):
+	case <-time.NewTicker(2 * time.Second).C:
 		return nil
 	}
 }
 
-func (lb *loadBalancer) swapPGxPoolNode(n *PGxPoolNode) {
+func (lb *LoadBalancer) swapPGxPoolNode(n *PGxPoolNode) {
 	temp := lb.nodes[0]
 	lb.nodes[0] = n
 	lb.nodes = append(lb.nodes, temp)
 }
 
-func (lb *loadBalancer) swapSQLxPoolNode(n *SQLxPoolNode) {
+func (lb *LoadBalancer) swapSQLxPoolNode(n *SQLxPoolNode) {
 	temp := lb.nodes[0]
 	lb.nodes[0] = n
 	lb.nodes = append(lb.nodes, temp)
 }
 
-func (lb *loadBalancer) swapSQLPoolNode(n *SQLPoolNode) {
+func (lb *LoadBalancer) swapSQLPoolNode(n *SQLPoolNode) {
 	temp := lb.nodes[0]
 	lb.nodes[0] = n
 	lb.nodes = append(lb.nodes, temp)
