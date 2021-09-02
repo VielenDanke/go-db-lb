@@ -1,8 +1,9 @@
-package main
+package container
 
 import (
 	"context"
 	"database/sql"
+
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/jmoiron/sqlx"
 )
