@@ -17,13 +17,17 @@ type LoadBalancer struct {
 	nodes []PoolNode
 }
 
-func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *LoadBalancer {
+func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) (*LoadBalancer, error) {
+	if timeoutSeconds <= 0 {
+		return nil, errors.New("timeout cannot be equal or less than 0")
+	}
 	nodes := make([]PoolNode, 0, nodeSize)
+	ticker := time.NewTicker(time.Duration(timeoutSeconds) * time.Second)
 	lb := &LoadBalancer{nodes: nodes}
-	go func(lb *LoadBalancer) {
+	go func(lb *LoadBalancer, ch <-chan time.Time) {
 		counter := 0
 		for {
-			time.Sleep(time.Duration(timeoutSeconds) * time.Second)
+			<-ch
 			if counter > len(lb.nodes)-1 {
 				counter = 0
 			}
@@ -40,8 +44,8 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) *LoadBal
 			}
 			counter++
 		}
-	}(lb)
-	return lb
+	}(lb, ticker.C)
+	return lb, nil
 }
 
 func (lb *LoadBalancer) AddPGxPoolNode(ctx context.Context, n *pgxpool.Pool) error {

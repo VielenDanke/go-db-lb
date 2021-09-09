@@ -6,6 +6,7 @@ import (
 	"log"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/jackc/pgx/v4"
 
@@ -113,5 +114,13 @@ func TestLoadBalancer_CallPrimaryPreferred_PGxPoolNode(t *testing.T) {
 			return
 		}
 		counter++
+	}
+}
+
+func TestNewLoadBalancer(t *testing.T) {
+	for {
+		time.Sleep(1 * time.Second)
+		fAvailable := pgxLB.CallFirstAvailable()
+		fmt.Println(fAvailable.IsHealthy())
 	}
 }

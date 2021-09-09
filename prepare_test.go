@@ -17,11 +17,11 @@ var sqlLB *LoadBalancer
 var sqlxLB *LoadBalancer
 
 func init() {
-	dbUrl := "user=user password=password sslmode=disable dbname=user host=localhost port=5432"
+	dbUrl := "user=user password=password sslmode=disable dbname=test host=localhost port=5432"
 	ctx := context.Background()
-	pgxLB = NewLoadBalancer(ctx, 2, 2)
-	sqlLB = NewLoadBalancer(ctx, 2, 2)
-	sqlxLB = NewLoadBalancer(ctx, 2, 2)
+	pgxLB, _ = NewLoadBalancer(ctx, 2, 2)
+	sqlLB, _ = NewLoadBalancer(ctx, 2, 2)
+	sqlxLB, _ = NewLoadBalancer(ctx, 2, 2)
 	cfg, _ := pgxpool.ParseConfig(dbUrl)
 	cfg.MaxConns = 10
 	cfg.MinConns = 5
