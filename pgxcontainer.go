@@ -24,7 +24,7 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) (*LoadBa
 	nodes := make([]PoolNode, 0, nodeSize)
 	ticker := time.NewTicker(time.Duration(timeoutSeconds) * time.Second)
 	lb := &LoadBalancer{nodes: nodes}
-	go func(lb *LoadBalancer, ch <-chan time.Time) {
+	go func(ctx context.Context, lb *LoadBalancer, ch <-chan time.Time) {
 		counter := 0
 		for range ch {
 			if err := ctx.Err(); err != nil {
@@ -46,7 +46,7 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) (*LoadBa
 			}
 			counter++
 		}
-	}(lb, ticker.C)
+	}(ctx, lb, ticker.C)
 	return lb, nil
 }
 
