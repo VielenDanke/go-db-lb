@@ -26,8 +26,7 @@ func NewLoadBalancer(ctx context.Context, nodeSize, timeoutSeconds int) (*LoadBa
 	lb := &LoadBalancer{nodes: nodes}
 	go func(lb *LoadBalancer, ch <-chan time.Time) {
 		counter := 0
-		for {
-			<-ch
+		for range ch {
 			if counter > len(lb.nodes)-1 {
 				counter = 0
 			}
